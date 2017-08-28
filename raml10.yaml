@@ -1,0 +1,221 @@
+#%RAML 1.0
+title: "Customer API"
+description: "Remote Customer API, this API will be used to create a new customer\
+  \ and get, update and delete existing customers."
+version: "1.0.0"
+protocols:
+- "HTTP"
+baseUri: "http://api.onlineshopping.com"
+mediaType:
+- "application/json"
+types:
+  Customer:
+    type: "object"
+    description: "Customer resource."
+    properties:
+      firstname:
+        type: "string"
+        description: "Customer first name."
+      lastname:
+        type: "string"
+        description: "Customer last name."
+      address:
+        type: "string"
+        description: "Customer address including pin code."
+        required: false
+      id:
+        type: "integer"
+        description: "Unique customer identifier"
+        required: false
+      lastmodifieddate:
+        type: "datetime"
+        description: "Time-stamp when the customer details were last changed."
+        required: false
+  Error:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+      message:
+        type: "string"
+/customers:
+  get:
+    displayName: "Get all customers."
+    description: "List all customers."
+    headers:
+      Cache-Control:
+        type: "string"
+        description: "private, max-age=86400"
+        required: false
+    responses:
+      200:
+        body:
+          type: "array"
+          items:
+            type: "Customer"
+          example:
+            value: "{\n                {\n                  \"id\": 101,\n       \
+              \           \"firstname\": \"Shashi\",\n                  \"lastname\"\
+              : \"Prashar\",\n                  \"address\": \"Strathfield, NSW-2135\"\
+              ,\n                  \"lastmodifieddate\" : \"1447585871\"\n       \
+              \         },\n                {\n                  \"id\": 102,\n  \
+              \                \"firstname\": \"Shuja\",\n                  \"lastname\"\
+              : \"Rehman\",\n                  \"address\": \"Parramatta, NSW-2140\"\
+              ,\n                  \"lastmodifieddate\" : \"1447569471\"\n       \
+              \         }\n}"
+            strict: false
+  post:
+    displayName: "Create a new customer"
+    description: "Create a new customer."
+    body:
+      type: "Customer"
+      description: "The POST method takes a input as firstname, lastname and address."
+      example:
+        value: "\n{\n                  \"firstname\": \"Shashi\",\n              \
+          \    \"lastname\": \"Prashar\",\n                  \"address\": \"Strathfield-2135\"\
+          \n }"
+        strict: false
+    responses:
+      200:
+        description: "New Customer created"
+        body:
+          type: "Customer"
+          example:
+            value: "{\n                  \"id\": 101,\n                  \"firstname\"\
+              : \"Shashi\",\n                  \"lastname\": \"Prashar\",\n      \
+              \            \"address\": \"Strathfield-2135\",\n                  \"\
+              lastmodifieddate\" : \"1447569471\"\n }"
+            strict: false
+      400:
+        body:
+          type: "Error"
+          example:
+            value: "{ code: 1002, message: \"Invalid Request\" }"
+            strict: false
+  put:
+    displayName: "Update an existing customer data"
+    description: "This method will update an existing customer, if the customer with\
+      \ id is not found this method will retuen a 404."
+    body:
+      type: "Customer"
+      description: "Updated customer data."
+      example:
+        value: "{\n              \"id\": 101,\n              \"firstname\": \"Shashi\"\
+          ,\n              \"lastname\": \"Prashar\",\n              \"address\":\
+          \ \"Homebush-2140\",\n}"
+        strict: false
+    responses:
+      200:
+        description: "Updated customer data."
+        body:
+          type: "Customer"
+          description: "Updated customer data."
+          example:
+            value: "{\n              \"id\": 101,\n              \"firstname\": \"\
+              Shashi\",\n              \"lastname\": \"Prashar\",\n              \"\
+              address\": \"Homebush-2140\",\n              \"lastmodifieddate\" :\
+              \ \"1447569471\"\n}"
+            strict: false
+      404:
+        description: "No customer with existing found."
+/customer/{id}:
+  description: "Get customer by id."
+  uriParameters:
+    id:
+      type: "string"
+  get:
+    queryParameters:
+      id:
+        type: "integer"
+    responses:
+      200:
+        body:
+          application/json:
+            type: "Customer"
+            description: "Get customer by id returns a customer if it exists."
+            example:
+              value: "{\n                  \"id\": 101,\n                  \"firstname\"\
+                : \"Shashi\",\n                  \"lastname\": \"Prashar\",\n    \
+                \              \"address\": \"Strathfield, NSW\",\n              \
+                \    \"modifiedDate\": \"Sun Aug 27 21:05:49 AEST 2017\"\n }"
+              strict: false
+      404:
+        description: "Customer not found"
+        body:
+          application/json:
+            type: "Error"
+            description: "A customer not found error is returned if customer by that\
+              \ id does not exists."
+            example:
+              value: "{ code: 1001, message: \"Customer not found\" }"
+              strict: false
+  delete:
+    description: "Delete customer by id."
+    responses:
+      200:
+        body:
+          application/json:
+            type: "Customer"
+            description: "Customer deleted."
+            example:
+              value: "{\n              \"id\": 101,\n              \"firstname\":\
+                \ \"Shashi\",\n              \"lastname\": \"Prashar\",\n        \
+                \      \"address\": \"Strathfield, NSW\",\n              \"lastmodifieddate\"\
+                \ : \"1447569471\"\n}"
+              strict: false
+      404:
+        body:
+          type: "Error"
+          example:
+            value: "{ code: 1001, message: \"Customer not found\" }"
+            strict: false
+/customers/{searchcriteria}/{searchvalue}:
+  displayName: "Search customer based on criteria and its value."
+  description: "Search customers based on certain criteria, e.g. searchcriteria=address\
+    \ and searchvalue=pinncode or searchcriteria=lastname and searchvalue=last name\
+    \ of customer.\n"
+  uriParameters:
+    searchcriteria:
+      type: "string"
+    searchvalue:
+      type: "string"
+  get:
+    displayName: "Search based on criteria"
+    description: "GET all customers matching search criteria and search value."
+    headers:
+      Cache-Control:
+        type: "string"
+        description: "private,max-age=3600"
+        required: false
+    responses:
+      302:
+        description: "Customers with search criteria found"
+        headers:
+          Cache-Control:
+            type: "string"
+            description: "private,max-age=3600"
+          Content-Encoding:
+            type: "string"
+        body:
+          application/json:
+            type: "array"
+            items:
+              type: "Customer"
+            example:
+              value: "{\n                {\n                  \"id\": 101,\n     \
+                \             \"firstname\": \"Shashi\",\n                  \"lastname\"\
+                : \"Prashar\",\n                  \"address\": \"Strathfield, NSW-2135\"\
+                ,\n                  \"lastmodifieddate\" : \"1447585871\"\n     \
+                \           },\n                {\n                  \"id\": 102,\n\
+                \                  \"firstname\": \"Shuja\",\n                  \"\
+                lastname\": \"Rehman\",\n                  \"address\": \"Parramatta,\
+                \ NSW-2135\",\n                  \"lastmodifieddate\" : \"1447569471\"\
+                \n                }\n}"
+              strict: false
+      404:
+        description: "No data matching search criteria was found"
+        body:
+          type: "Error"
+          example:
+            value: "{ code: 1001, message: \"Data not found\" }"
+            strict: false
